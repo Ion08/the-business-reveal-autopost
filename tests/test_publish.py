@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import date, datetime
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
@@ -27,6 +27,12 @@ class ScheduleTests(unittest.TestCase):
         zone = ZoneInfo("Europe/Chisinau")
         self.assertIsNone(publish.current_post(self.posts, datetime(2026, 10, 4, 9, 21, tzinfo=zone)))
         self.assertIsNone(publish.current_post(self.posts, datetime(2026, 10, 14, 9, 0, tzinfo=zone)))
+
+    def test_start_date_can_move_without_changing_post_order(self):
+        zone = ZoneInfo("Europe/Chisinau")
+        first = publish.current_post(self.posts, datetime(2026, 10, 8, 9, 0, tzinfo=zone), date(2026, 10, 8))
+        self.assertEqual(first["brand"], "Costco")
+        self.assertIsNone(publish.current_post(self.posts, datetime(2026, 10, 4, 9, 0, tzinfo=zone), date(2026, 10, 8)))
 
 
 class IdempotencyTests(unittest.TestCase):
@@ -68,4 +74,3 @@ class IdempotencyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

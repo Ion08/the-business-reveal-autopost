@@ -27,7 +27,7 @@ jobs:
           META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
           META_FB_PAGE_ID: ${{ secrets.META_FB_PAGE_ID }}
           PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
+          CAMPAIGN_START_DATE: ${{ vars.CAMPAIGN_START_DATE }}
           MEDIA_BASE_URL: ${{ vars.MEDIA_BASE_URL }}
           META_GRAPH_VERSION: v26.0
         run: python3 publish.py --publish
-

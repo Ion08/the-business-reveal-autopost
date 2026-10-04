@@ -4,7 +4,7 @@ This repository publishes the prepared 30 five-slide posts to Instagram and the 
 
 ## Current campaign
 
-- Dates: **4–13 October 2026**.
+- Source calendar: **4–13 October 2026**. Set `CAMPAIGN_START_DATE` to the first live day; the 30 posts then run for ten consecutive days.
 - 30 posts, 3 per day, 5 images per post.
 - Images are public JPEGs in `assets/`; English captions and exact image order are in `data/posts.json`.
 - A missed time slot is not backfilled automatically. Repeated runs of a completed slot are skipped.
@@ -19,6 +19,7 @@ This repository publishes the prepared 30 five-slide posts to Instagram and the 
    - `META_FB_PAGE_ID`: the Facebook Page's numeric ID.
 3. Add these **variables**:
    - `MEDIA_BASE_URL`: `https://raw.githubusercontent.com/OWNER/REPO/main` (replace `OWNER` and `REPO`).
+   - `CAMPAIGN_START_DATE`: the first publishing date in `YYYY-MM-DD` format, in Chișinău time. Choose a future date when activating the campaign.
    - `PUBLISH_ENABLED`: leave unset until the live connection and first post have been checked. Set to `true` to allow publishing.
 4. The Meta app and token need access to the Page and Instagram account, including Instagram content publishing and Page post publishing permissions. The Instagram account must be professional and linked to the Page for the Facebook Login flow.
 5. Create a fine-grained GitHub token with **Actions: Read and write** on this repository only. Keep it in cron-job.org's protected job configuration, not in GitHub or this repository.
@@ -50,4 +51,3 @@ The workflow needs `contents: write` to commit `data/state.json`. Its concurrenc
 - [Meta's Instagram media publish endpoint](https://www.postman.com/meta/instagram/request/gabnx7r/publish-reel)
 - [GitHub workflow dispatch API](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event)
 - [cron-job.org REST API](https://docs.cron-job.org/rest-api.html)
-

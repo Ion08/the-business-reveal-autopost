@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -47,12 +47,13 @@ def load_posts() -> list[dict]:
     return posts
 
 
-def current_post(posts: list[dict], now: datetime) -> dict | None:
+def current_post(posts: list[dict], now: datetime, start_date: date = date(2026, 10, 4)) -> dict | None:
     local = now.astimezone(TIMEZONE)
     if local.hour not in SLOT_HOURS or local.minute > 20:
         return None
+    shift = start_date - date(2026, 10, 4)
     return next(
-        (post for post in posts if post["date"] == local.date().isoformat() and post["slot"] == local.hour),
+        (post for post in posts if date.fromisoformat(post["date"]) + shift == local.date() and post["slot"] == local.hour),
         None,
     )
 
@@ -201,17 +202,25 @@ def publish_platform(
 
 def run(now: datetime, live: bool) -> int:
     posts = load_posts()
-    post = current_post(posts, now)
+    configured_start = os.environ.get("CAMPAIGN_START_DATE", "2026-10-04")
+    try:
+        start_date = date.fromisoformat(configured_start)
+    except ValueError as error:
+        raise PublishError("CAMPAIGN_START_DATE must be YYYY-MM-DD") from error
+    post = current_post(posts, now, start_date)
     if post is None:
         print("No scheduled post in the current Chișinău slot; nothing published")
         return 0
-    print(f"Scheduled: {post['id']} — {post['brand']} at {post['date']} {post['slot']:02d}:00")
+    effective_date = date.fromisoformat(post["date"]) + (start_date - date(2026, 10, 4))
+    print(f"Scheduled: {post['id']} — {post['brand']} at {effective_date} {post['slot']:02d}:00")
     if not live:
         print("Dry run: no Meta requests or state changes")
         return 0
 
     if os.environ.get("PUBLISH_ENABLED") != "true":
         raise PublishError("PUBLISH_ENABLED is not true; live publishing is disabled")
+    if "CAMPAIGN_START_DATE" not in os.environ:
+        raise PublishError("CAMPAIGN_START_DATE is required for live publishing")
     required = ("META_PAGE_ACCESS_TOKEN", "META_IG_USER_ID", "META_FB_PAGE_ID", "MEDIA_BASE_URL")
     missing = [name for name in required if not os.environ.get(name)]
     if missing:

@@ -34,7 +34,7 @@ def main() -> None:
                 image.convert("RGB").save(destination, "JPEG", quality=92, optimize=True, subsampling=0)
             images.append(destination.relative_to(ROOT).as_posix())
         output.append({
-            "id": f"{date}-{slot:02d}",
+            "id": f"post-{index:02d}",
             "date": date,
             "slot": slot,
             "brand": post["brand"],
@@ -48,4 +48,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
