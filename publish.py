@@ -202,7 +202,7 @@ def publish_platform(
 
 def run(now: datetime, live: bool) -> int:
     posts = load_posts()
-    configured_start = os.environ.get("CAMPAIGN_START_DATE", "2026-10-04")
+    configured_start = os.environ.get("CAMPAIGN_START_DATE") or "2026-10-04"
     try:
         start_date = date.fromisoformat(configured_start)
     except ValueError as error:

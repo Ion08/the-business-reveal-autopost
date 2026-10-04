@@ -1,4 +1,5 @@
 import unittest
+import os
 from datetime import date, datetime
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -33,6 +34,11 @@ class ScheduleTests(unittest.TestCase):
         first = publish.current_post(self.posts, datetime(2026, 10, 8, 9, 0, tzinfo=zone), date(2026, 10, 8))
         self.assertEqual(first["brand"], "Costco")
         self.assertIsNone(publish.current_post(self.posts, datetime(2026, 10, 4, 9, 0, tzinfo=zone), date(2026, 10, 8)))
+
+    def test_blank_start_date_is_safe_outside_a_slot(self):
+        zone = ZoneInfo("Europe/Chisinau")
+        with patch.dict(os.environ, {"CAMPAIGN_START_DATE": ""}):
+            self.assertEqual(publish.run(datetime(2026, 10, 4, 10, 34, tzinfo=zone), live=True), 0)
 
 
 class IdempotencyTests(unittest.TestCase):
