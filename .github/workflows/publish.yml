@@ -1,0 +1,33 @@
+name: Publish scheduled carousel
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: business-reveal-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Publish current slot
+        env:
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+          META_FB_PAGE_ID: ${{ secrets.META_FB_PAGE_ID }}
+          PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
+          MEDIA_BASE_URL: ${{ vars.MEDIA_BASE_URL }}
+          META_GRAPH_VERSION: v26.0
+        run: python3 publish.py --publish
+
