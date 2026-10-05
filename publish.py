@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish one scheduled five-image carousel to Instagram and Facebook."""
+"""Publish one scheduled five-image carousel to Instagram."""
 
 from __future__ import annotations
 
@@ -221,7 +221,7 @@ def run(now: datetime, live: bool) -> int:
         raise PublishError("PUBLISH_ENABLED is not true; live publishing is disabled")
     if "CAMPAIGN_START_DATE" not in os.environ:
         raise PublishError("CAMPAIGN_START_DATE is required for live publishing")
-    required = ("META_PAGE_ACCESS_TOKEN", "META_IG_USER_ID", "META_FB_PAGE_ID", "MEDIA_BASE_URL")
+    required = ("META_PAGE_ACCESS_TOKEN", "META_IG_USER_ID", "MEDIA_BASE_URL")
     missing = [name for name in required if not os.environ.get(name)]
     if missing:
         raise PublishError("Missing configuration: " + ", ".join(missing))
@@ -231,22 +231,10 @@ def run(now: datetime, live: bool) -> int:
     api = GraphAPI(os.environ["META_PAGE_ACCESS_TOKEN"], os.environ.get("META_GRAPH_VERSION", "v26.0"))
     state = load_state()
     user_id = os.environ["META_IG_USER_ID"]
-    page_id = os.environ["META_FB_PAGE_ID"]
     publish_platform(
         api, state, post, "instagram",
         lambda: prepare_instagram(api, user_id, urls, post["caption"]),
         lambda parent: api.request("POST", f"{user_id}/media_publish", {"creation_id": parent})["id"],
-    )
-    publish_platform(
-        api, state, post, "facebook",
-        lambda: prepare_facebook(api, page_id, urls),
-        lambda photos: api.request(
-            "POST", f"{page_id}/feed",
-            {"message": post["caption"], **{
-                f"attached_media[{i}]": json.dumps({"media_fbid": photo_id})
-                for i, photo_id in enumerate(photos)
-            }},
-        )["id"],
     )
     return 0
 
