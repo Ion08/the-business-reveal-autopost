@@ -1,6 +1,6 @@
 # The Business Reveal publisher
 
-This repository publishes the prepared 30 five-slide posts to Instagram and the linked Facebook Page. A cron-job.org job calls a GitHub Actions workflow at **09:00, 14:00, and 19:00 Europe/Chisinau**. The workflow selects the matching dated post and publishes it through the Meta Graph API.
+This repository publishes the prepared five-slide posts to Instagram only. GitHub Actions runs automatically for **09:00, 14:00, and 19:00 Europe/Chisinau**. The workflow selects the matching dated post and publishes it through the Meta Graph API.
 
 ## Current campaign
 
@@ -8,7 +8,11 @@ This repository publishes the prepared 30 five-slide posts to Instagram and the 
 - 30 posts, 3 per day, 5 images per post.
 - Images are public JPEGs in `assets/`; English captions and exact image order are in `data/posts.json`.
 - A missed time slot is not backfilled automatically. Repeated runs of a completed slot are skipped.
-- Facebook receives one multi-photo Page post containing all five images. Instagram receives a swipeable carousel.
+- Instagram receives a swipeable carousel. Facebook publishing is disabled.
+- Active campaign: **6–15 October 2026**. The IKEA carousel was published on 5 October and will be skipped, leaving 29 posts.
+- UTC schedule candidates cover both UTC+2 and UTC+3. The Python publisher checks the actual Chișinău date and time; repeated runs skip published posts. GitHub scheduling may be delayed, and runs after the 20-minute slot window do not backfill.
+- The old cron-job.org job remains disabled. No GitHub dispatch token is required by the active scheduler.
+- Meta token expiry has not been verified. If Meta rejects an expired token, update the existing GitHub secret.
 
 ## Setup
 
@@ -16,17 +20,12 @@ This repository publishes the prepared 30 five-slide posts to Instagram and the 
 2. In repository **Settings → Secrets and variables → Actions**, add these **secrets**:
    - `META_PAGE_ACCESS_TOKEN`: a valid Page access token for the linked Page and professional Instagram account.
    - `META_IG_USER_ID`: the Instagram professional account's numeric ID.
-   - `META_FB_PAGE_ID`: the Facebook Page's numeric ID.
 3. Add these **variables**:
    - `MEDIA_BASE_URL`: `https://raw.githubusercontent.com/OWNER/REPO/main` (replace `OWNER` and `REPO`).
    - `CAMPAIGN_START_DATE`: the first publishing date in `YYYY-MM-DD` format, in Chișinău time. Choose a future date when activating the campaign.
    - `PUBLISH_ENABLED`: leave unset until the live connection and first post have been checked. Set to `true` to allow publishing.
 4. The Meta app and token need access to the Page and Instagram account, including Instagram content publishing and Page post publishing permissions. The Instagram account must be professional and linked to the Page for the Facebook Login flow.
-5. Create a fine-grained GitHub token with **Actions: Read and write** on this repository only. Keep it in cron-job.org's protected job configuration, not in GitHub or this repository.
-6. Create one cron-job.org POST job pointing to `https://api.github.com/repos/OWNER/REPO/actions/workflows/publish.yml/dispatches`. Set timezone `Europe/Chisinau`, hours `09`, `14`, `19`, minute `00`, every day; body `{"ref":"main"}` and headers `Authorization: Bearer <GITHUB_DISPATCH_TOKEN>`, `Accept: application/vnd.github+json`, `Content-Type: application/json`, `X-GitHub-Api-Version: 2022-11-28`.
-7. You can instead create that job with `create_cron_job.py` after setting `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_DISPATCH_TOKEN`, and `CRON_JOB_API_KEY` in your local environment. The script creates the job **disabled** for inspection. Enable it only after the GitHub secrets, media URLs, and a dry run are verified.
-
-The cron-job.org API supports a named timezone, so the three local times continue across daylight-saving changes. The job only dispatches GitHub Actions; the Meta token stays in GitHub Secrets.
+5. The workflow schedule is already enabled on the default branch. Keep `PUBLISH_ENABLED=true` while the campaign should run.
 
 ## Checks
 
