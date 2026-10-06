@@ -1,6 +1,6 @@
 # The Business Reveal publisher
 
-This repository publishes the prepared five-slide posts to Instagram only. GitHub Actions runs automatically for **09:00, 14:00, and 19:00 Europe/Chisinau**. The workflow selects the matching dated post and publishes it through the Meta Graph API.
+This repository publishes the prepared five-slide posts to Instagram only. cron-job.org dispatches GitHub Actions automatically at **09:00, 14:00, and 19:00 Europe/Chisinau**. The workflow selects the matching dated post and publishes it through the Meta Graph API.
 
 ## Current campaign
 
@@ -10,8 +10,9 @@ This repository publishes the prepared five-slide posts to Instagram only. GitHu
 - A missed time slot is not backfilled automatically. Repeated runs of a completed slot are skipped.
 - Instagram receives a swipeable carousel. Facebook publishing is disabled.
 - Active campaign: **6–15 October 2026**. The IKEA carousel was published on 5 October and will be skipped, leaving 29 posts.
-- UTC schedule candidates cover both UTC+2 and UTC+3. The Python publisher checks the actual Chișinău date and time; repeated runs skip published posts. GitHub scheduling may be delayed, and runs after the 20-minute slot window do not backfill.
-- The old cron-job.org job remains disabled. No GitHub dispatch token is required by the active scheduler.
+- cron-job.org job `8575393` uses `0 9,14,19 * * *` in Europe/Chisinau. The Python publisher checks the actual local date and time; repeated runs skip published posts. Runs after the 20-minute slot window do not backfill.
+- Native GitHub scheduling is disabled. cron-job.org uses a repository-restricted GitHub token with Actions read/write and Metadata read-only. Its dispatch test returned HTTP 204 and GitHub run #8 succeeded outside the publishing slot on 6 October 2026. The first autonomous Instagram publication after this switch is not yet verified.
+- The dispatch token expires on 5 December 2026; renew it in cron-job.org before then.
 - Meta token expiry has not been verified. If Meta rejects an expired token, update the existing GitHub secret.
 
 ## Setup
@@ -25,7 +26,7 @@ This repository publishes the prepared five-slide posts to Instagram only. GitHu
    - `CAMPAIGN_START_DATE`: the first publishing date in `YYYY-MM-DD` format, in Chișinău time. Choose a future date when activating the campaign.
    - `PUBLISH_ENABLED`: leave unset until the live connection and first post have been checked. Set to `true` to allow publishing.
 4. The Meta app and token need access to the Page and Instagram account, including Instagram content publishing and Page post publishing permissions. The Instagram account must be professional and linked to the Page for the Facebook Login flow.
-5. The workflow schedule is already enabled on the default branch. Keep `PUBLISH_ENABLED=true` while the campaign should run.
+5. Configure cron-job.org to POST to `https://api.github.com/repos/Ion08/the-business-reveal-autopost/actions/workflows/publish.yml/dispatches` with body `{"ref":"main"}` and an Authorization Bearer header. Keep the token only in cron-job.org, never in this repository. Enable the job after verifying HTTP 204 and the workflow run. Keep `PUBLISH_ENABLED=true` while the campaign should run.
 
 ## Checks
 
